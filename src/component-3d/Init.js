@@ -11,6 +11,14 @@ const objParameters = {
 	rotationZ: 0
 };
 
+function onWindowResize(camera, renderer) {
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
 function Init () {
 	useEffect(() => {
 		const width = window.innerWidth;
@@ -36,6 +44,10 @@ function Init () {
 		const controls = new OrbitControls(camera, renderer.domElement);
 		// controls.maxPolarAngle=Math.PI/2
 
+		window.addEventListener('resize',
+				onWindowResize.bind(this, camera, renderer),
+				false)
+
 		const animate = () => {
 			requestAnimationFrame( animate );
 			controls.update();
@@ -45,7 +57,13 @@ function Init () {
 			renderer.render( scene, camera );
 		};
 		animate();
+
 		console.log('mounted')
+
+		return () => { //componentWillUnmount
+			window.removeEventListener('resize', onWindowResize.bind(this, camera, renderer), false)
+			console.log('unmounted')
+		}
 	}, []);
 	return <></>
 }
