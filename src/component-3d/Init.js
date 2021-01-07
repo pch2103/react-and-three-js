@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import * as THREE from "three";
 import addCone from "./addCone";
 import addLights from "./addLights";
@@ -12,15 +12,21 @@ const objParameters = {
 };
 
 function onWindowResize(camera, renderer) {
-
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function Init () {
+	const mountRef = useRef(null);
+
 	useEffect(() => {
+		const { current } = mountRef;
+
+		if (!current) {
+			return;
+		}
+
 		const width = window.innerWidth;
 		const height = window.innerHeight;
 
@@ -28,7 +34,10 @@ function Init () {
 		renderer.setClearColor(0x000000);
 		renderer.setSize(width, height);
 
-		document.body.appendChild(renderer.domElement);
+		//document.body.appendChild( renderer.domElement );
+		// use ref as a mount point of the Three.js scene instead of the document.body
+		const { domElement } = renderer;
+		current.appendChild(domElement);
 
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
@@ -62,10 +71,11 @@ function Init () {
 
 		return () => { //componentWillUnmount
 			window.removeEventListener('resize', onWindowResize.bind(this, camera, renderer), false)
+			current.removeChild(domElement);
 			console.log('unmounted')
 		}
 	}, []);
-	return <></>
+	return <div ref={mountRef} />;
 }
 
 export default Init;
